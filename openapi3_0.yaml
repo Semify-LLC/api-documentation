@@ -9,7 +9,7 @@ components:
         Access to this API requires a JWT token. You can obtain a JWT by providing a valid username and password through the Authorization API. Once you receive the token, enter it into the designated field.
 info:
   contact:
-    url: https://www.semify.com
+    url: https://www.semify.com/
     name: API Support
     email: brians@semify.com
   termsOfService: ''
