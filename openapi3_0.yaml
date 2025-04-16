@@ -5,7 +5,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: >-
+      description: 
         A JWT token is required to access this API. A JWT can be obtained by
         providing a correct username and password in the Authorization API. Then
         entering the token in the available field.
