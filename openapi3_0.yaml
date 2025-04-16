@@ -6,9 +6,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: >-
-        A JWT token is required to access this API. A JWT can be obtained by
-        providing a correct username and password in the Authorization API. Then
-        entering the token in the available field.
+        Access to this API requires a JWT token. You can obtain a JWT by providing a valid username and password through the Authorization API. Once you receive the token, enter it into the designated field.
 info:
   contact:
     url: https://www.semify.com
