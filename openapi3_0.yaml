@@ -5,7 +5,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: 
+      description: >-
         A JWT token is required to access this API. A JWT can be obtained by
         providing a correct username and password in the Authorization API. Then
         entering the token in the available field.
@@ -1049,7 +1049,7 @@ paths:
       description: A secured route for getting/retrieving account information
       operationId: accounts_get
       parameters:
-        - required: false
+        - required: true
           in: path
           name: account_id
           schema:
@@ -2900,7 +2900,7 @@ paths:
       description: A secured route for getting/retrieving account information
       operationId: accounts_get_v2
       parameters:
-        - required: false
+        - required: true
           in: path
           name: account_id
           schema:
@@ -6602,13 +6602,13 @@ paths:
           schema:
             type: integer
           description: Campaign ID of the requested account
-        - required: false
+        - required: true
           in: path
           name: date_from
           schema:
             type: string
           description: date from optional parameter
-        - required: false
+        - required: true
           in: path
           name: date_to
           schema:
@@ -6917,13 +6917,13 @@ paths:
           schema:
             type: integer
           description: Campaign ID of the requested account
-        - required: false
+        - required: true
           in: path
           name: date_from
           schema:
             type: string
           description: date from optional parameter
-        - required: false
+        - required: true
           in: path
           name: date_to
           schema:
@@ -7546,13 +7546,13 @@ paths:
           schema:
             type: integer
           description: Campaign ID of the requested account
-        - required: false
+        - required: true
           in: path
           name: date_from
           schema:
             type: string
           description: date from optional parameter
-        - required: false
+        - required: true
           in: path
           name: date_to
           schema:
@@ -7861,13 +7861,13 @@ paths:
           schema:
             type: integer
           description: Campaign ID of the requested account
-        - required: false
+        - required: true
           in: path
           name: date_from
           schema:
             type: integer
           description: Optional - date from filter against the date_checked param
-        - required: false
+        - required: true
           in: path
           name: date_to
           schema:
@@ -8174,13 +8174,13 @@ paths:
           schema:
             type: integer
           description: Campaign ID of the requested account
-        - required: false
+        - required: true
           in: path
           name: date_from
           schema:
             type: integer
           description: Optional - date from filter applied against the completed date
-        - required: false
+        - required: true
           in: path
           name: date_to
           schema:
