@@ -1,0 +1,12 @@
+apiVersion: 1.0.0
+type: service
+name: Semify API Documentation
+description: Public OpenAPI documentation for the Semify API.
+owner: Semify-LLC
+links:
+  - name: OpenAPI 3.0 Specification
+    type: api
+    url: openapi3_0.yaml
+repository:
+  url: https://github.com/Semify-LLC/api-documentation
+  type: git
