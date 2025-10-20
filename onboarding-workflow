@@ -1,0 +1,1010 @@
+# Semify API Integration Workflow Guide
+
+## Overview
+
+This comprehensive guide outlines the complete workflow for integrating with the Semify Enterprise REST APIs. The Semify platform provides powerful tools for managing accounts, campaigns, service plans, and reporting through a secure, well-structured API ecosystem.
+
+**Base URL:** `https://developers.semify.com/`
+
+---
+
+## 1. Authentication
+
+### Getting Started
+All API interactions require authentication using JWT (JSON Web Token) Bearer tokens. The authentication process follows a two-step approach:
+
+### Step 1: Login Request
+**Endpoint:** `POST /api/v1/authentication/login`
+
+**Headers:**
+```http
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+    "username": "your_api_username",
+    "password": "your_api_password"
+}
+```
+
+**Response:**
+```json
+{
+    "error": false,
+    "data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_exp": 1640995200,
+    "message": "Bearer token created and it expires in 60 minutes"
+}
+```
+
+### Step 2: Using the Token
+Include the Bearer token in all subsequent API requests:
+
+**Headers:**
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+```
+
+**Token Expiration:** Tokens expire after 60 minutes and must be refreshed by re-authenticating.
+
+---
+
+## 2. Account Management (Accounts v2)
+
+### Creating Accounts
+**Endpoint:** `POST /api/v2/accounts`
+
+**Required Fields:**
+- `account_name` (string): Business name
+- `phone` (string): Contact phone number
+- `email` (string): Contact email address
+- `first_name` (string): Contact first name
+- `last_name` (string): Contact last name
+- `address_1` (string): Primary address
+- `city` (string): City
+- `state` (string): State/Province
+- `postal` (string): Postal/ZIP code
+- `country` (string): Country code (US, AU, etc.)
+- `website_url` (string): Business website
+- `external_account_identifier` (string): Your system's unique identifier
+
+**Optional Fields:**
+- `address_2` (string): Secondary address line
+- `external_account_manager` (object): Account manager details
+- `external_campaign_manager` (object): Campaign manager details
+- `attributes` (array): Custom variables (see Custom Variables section)
+
+**Request Example:**
+```json
+{
+    "account_name": "Acme Business Solutions",
+    "phone": "555-123-4567",
+    "email": "contact@acmebusiness.com",
+    "first_name": "John",
+    "last_name": "Smith",
+    "address_1": "123 Main Street",
+    "address_2": "Suite 100",
+    "city": "Anytown",
+    "state": "CA",
+    "postal": "90210",
+    "country": "US",
+    "website_url": "https://www.acmebusiness.com",
+    "external_account_identifier": "ACME-001",
+    "external_account_manager": {
+        "name": "Jane Doe",
+        "email": "jane.doe@yourcompany.com"
+    },
+    "external_campaign_manager": {
+        "name": "Bob Johnson",
+        "email": "bob.johnson@yourcompany.com"
+    },
+    "attributes": [
+        {
+            "field_name": "Industry",
+            "field_value": "Technology"
+        },
+        {
+            "field_name": "Priority Level",
+            "field_value": "High"
+        }
+    ]
+}
+```
+
+**Response:**
+```json
+{
+    "data": {
+        "campaign_id": "476273",
+        "account_id": "424685"
+    },
+    "messages": [
+        "Account successfully created."
+    ],
+    "pagination": {
+        "maxRows": 0,
+        "totalPages": 1,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 1
+    },
+    "error": false
+}
+```
+
+### Custom Variables (Attributes)
+The `attributes` array allows you to send custom key-value pairs that can be used throughout the Semify platform:
+
+**Structure:**
+```json
+"attributes": [
+    {
+        "field_name": "Custom Field Name",
+        "field_value": "Custom Field Value"
+    }
+]
+```
+
+**Common Use Cases:**
+- Industry classification
+- Priority levels
+- Custom tracking identifiers
+- Business-specific metadata
+- Integration-specific flags
+
+**Validation Rules:**
+- At least one attribute must be provided
+- Both `field_name` and `field_value` are required
+- Field names should be descriptive and consistent
+- Values can be any string data
+
+---
+
+## 3. Account Retrieval (Getter Endpoints)
+
+### Getting All Accounts
+**Endpoint:** `GET /api/v2/accounts`
+
+**Purpose:** Retrieve all accounts associated with your reseller account.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response:**
+```json
+{
+    "data": [
+        {
+            "account_id": 424685,
+            "campaign_id": 476273,
+            "account_name": "Acme Business Solutions",
+            "address_1": "123 Main Street",
+            "address_2": "Suite 100",
+            "city": "Anytown",
+            "email": "contact@acmebusiness.com",
+            "first_name": "John",
+            "last_name": "Smith",
+            "phone_number": "555-123-4567",
+            "state": "CA",
+            "zip": "90210",
+            "country": "US",
+            "active": 1,
+            "external_account_identifier": {
+                "field_name": "External ID",
+                "field_value": "ACME-001"
+            }
+        }
+    ],
+    "messages": [
+        "Account Retrieval Success"
+    ],
+    "pagination": {
+        "maxRows": 0,
+        "totalPages": 1,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 1
+    },
+    "error": false
+}
+```
+
+### Getting Specific Account by ID
+**Endpoint:** `GET /api/v2/accounts/{account_id}`
+
+**Purpose:** Retrieve a specific account by its ID.
+
+**URL Parameters:**
+- `account_id` (required): The account identifier
+
+**Example Request:**
+```http
+GET /api/v2/accounts/424685
+```
+
+**Response:** Same structure as "Getting All Accounts" but returns only the specified account.
+
+### Getting Account by Custom Field
+**Endpoint:** `GET /api/v2/accounts/field/{field_name}/{field_value}`
+
+**Purpose:** Retrieve accounts based on custom field values (attributes).
+
+**URL Parameters:**
+- `field_name` (required): The custom field name to search by
+- `field_value` (required): The value to match
+
+**Example Requests:**
+```http
+# Find accounts by industry
+GET /api/v2/accounts/field/Industry/Technology
+
+# Find accounts by priority level
+GET /api/v2/accounts/field/Priority%20Level/High
+
+# Find accounts by external identifier
+GET /api/v2/accounts/field/External%20ID/ACME-001
+```
+
+**Response:** Same structure as account retrieval, but filtered by the specified field criteria.
+
+**Use Cases:**
+- Finding accounts by industry type
+- Filtering by priority levels
+- Locating accounts by external system identifiers
+- Searching by custom business classifications
+
+### Account Retrieval Features
+- **Ownership Verification:** Only returns accounts belonging to your reseller account
+- **Active Status Filtering:** Can filter by active/inactive accounts using query parameters
+- **Custom Field Integration:** Leverages the attributes system for flexible searching
+- **Campaign Association:** Includes associated campaign information when available
+
+---
+
+## 4. Campaign Retrieval (Getter Endpoints)
+
+### Getting All Campaigns for Reseller
+**Endpoint:** `GET /api/v1/campaigns`
+
+**Purpose:** Retrieve all campaigns associated with your reseller account.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response:**
+```json
+{
+    "data": [
+        {
+            "campaign_id": 476273,
+            "account_id": 424685,
+            "campaign_name": "Acme Business Solutions - Local SEO",
+            "campaign_stage_id": 5,
+            "campaign_stage_name": "Active",
+            "declineReviews": 0,
+            "declineGMB": 0,
+            "declineBlog": 0,
+            "campaign_start_date": "2024-01-15T10:30:00Z",
+            "account_start_date": "2024-01-15T10:00:00Z",
+            "camp_end_date": "2025-01-15T10:30:00Z",
+            "discount": 0,
+            "ppc_monthly_budget": 1000,
+            "ppc_monthly_budget_invoice_ind": 1,
+            "active_ind": 1
+        }
+    ],
+    "messages": [
+        "Campaigns successfully retrieved."
+    ],
+    "pagination": {
+        "maxRows": 0,
+        "totalPages": 1,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 1
+    },
+    "error": false
+}
+```
+
+### Getting Campaigns for Specific Account
+**Endpoint:** `GET /api/v1/accounts/campaign/{account_id}`
+
+**Purpose:** Retrieve all campaigns associated with a specific account.
+
+**URL Parameters:**
+- `account_id` (required): The account identifier
+
+**Example Request:**
+```http
+GET /api/v1/accounts/campaign/424685
+```
+
+**Response:**
+```json
+{
+    "data": {
+        "campaigns": [
+            {
+                "camp_id": 476273,
+                "account_id": 424685,
+                "camp_name": "Acme Business Solutions - Local SEO",
+                "camp_stage_id": 5,
+                "declineReviews": 0,
+                "declineGMB": 0,
+                "declineBlog": 0
+            }
+        ]
+    },
+    "messages": [
+        "Campaigns successfully retrieved."
+    ],
+    "pagination": {
+        "maxRows": 0,
+        "totalPages": 1,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 1
+    },
+    "error": false
+}
+```
+
+### Getting Specific Campaign Details
+**Endpoint:** `GET /api/v1/campaigns/{campaign_id}/accounts/{account_id}`
+
+**Purpose:** Retrieve detailed information for a specific campaign.
+
+**URL Parameters:**
+- `campaign_id` (required): The campaign identifier
+- `account_id` (required): The account identifier
+
+**Example Request:**
+```http
+GET /api/v1/campaigns/476273/accounts/424685
+```
+
+**Response:**
+```json
+{
+    "data": {
+        "campaign_id": 476273,
+        "account_id": 424685,
+        "campaign_name": "Acme Business Solutions - Local SEO",
+        "campaign_stage_id": 5,
+        "declineReviews": 0,
+        "declineGMB": 0,
+        "declineBlog": 0,
+        "camp_end_date": "2025-01-15T10:30:00Z",
+        "discount": 0,
+        "ppc_monthly_budget": 1000,
+        "ppc_monthly_budget_invoice_ind": 1
+    },
+    "messages": [
+        "Campaign successfully retrieved."
+    ],
+    "pagination": {
+        "maxRows": 0,
+        "totalPages": 1,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 1
+    },
+    "error": false
+}
+```
+
+### Campaign Retrieval Features
+- **Comprehensive Data:** Includes campaign stage, budget, and configuration details
+- **Account Association:** Links campaigns to their parent accounts
+- **Stage Information:** Provides campaign stage names and IDs
+- **Budget Details:** Includes PPC budget and invoice settings
+- **Active Status:** Shows whether campaigns are active or inactive
+- **Date Information:** Includes start and end dates for campaign lifecycle tracking
+
+---
+
+## 5. Service Plan Attachment (Products)
+
+### Attaching Service Plans to Campaigns
+**Endpoint:** `POST /api/v1/products/plans/campaigns`
+
+**Required Fields:**
+- `account_id` (integer): Account ID from account creation
+- `campaign_id` (integer): Campaign ID from account creation
+- `service_plan_id` (integer): Service plan identifier
+
+**Request Example:**
+```json
+{
+    "account_id": 424685,
+    "campaign_id": 476273,
+    "service_plan_id": 23010
+}
+```
+
+**Response:**
+```json
+{
+    "data": {},
+    "messages": [
+        "The service plan has been successfully attached."
+    ],
+    "pagination": {
+        "maxRows": 0,
+        "totalPages": 1,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 0
+    },
+    "error": false
+}
+```
+
+**Important Notes:**
+- Service plan attachment triggers automatic task creation and invoice generation
+- Account ownership is verified before attachment
+- Some reseller accounts have custom business logic applied post-attachment
+
+---
+
+## 6. Campaign Management (Campaigns)
+
+### Adding Campaign Notes
+**Endpoint:** `POST /api/v2/campaigns/notes`
+
+**Required Fields:**
+- `campaign_id` (integer): Campaign identifier
+- `writer_instructions` (string): Instructions for content writers
+- `additional_instructions` (string): Additional campaign instructions
+
+**Request Example:**
+```json
+{
+    "campaign_id": 476273,
+    "writer_instructions": "Focus on local SEO keywords and include location-specific content. Emphasize customer testimonials and service quality.",
+    "additional_instructions": "Include call-to-action buttons in all content. Maintain professional tone throughout. Reference local landmarks when appropriate."
+}
+```
+
+### Retrieving Campaign Notes
+**Endpoint:** `GET /api/v2/campaigns/notes`
+
+**Query Parameters:**
+- `campaign_id` (required): Campaign identifier
+
+**Example Request:**
+```http
+GET /api/v2/campaigns/notes?campaign_id=476273
+```
+
+### Updating Campaign Notes
+**Endpoint:** `PUT /api/v2/campaigns/notes`
+
+**Request Body:** Same structure as creating notes
+
+---
+
+## 7. Keyword Research and Management
+
+### SEMrush Keyword Research
+**Endpoint:** `POST /api/v1/semrush/keywords/research`
+
+**Purpose:** Retrieve organic keyword data from SEMrush for comprehensive keyword research and analysis.
+
+**Required Fields:**
+- `url` (string): Client business domain URL to analyze
+
+**Optional Fields:**
+- `categories` (array): Business categories for filtering keywords
+- `seeds` (array): Seed keywords to guide the analysis
+- `market` (string): Country/locale code (default: "us")
+- `language` (string): Language code (default: "en")
+- `max_keywords` (integer): Maximum keywords to return (default: 50)
+
+**Request Example:**
+```json
+{
+    "url": "https://example.com",
+    "categories": ["technology", "seo services"],
+    "seeds": ["best seo", "digital marketing agency"],
+    "market": "us",
+    "language": "en",
+    "max_keywords": 25
+}
+```
+
+**Response:**
+```json
+{
+    "data": {
+        "keywords": "Phrase,Search Volume,CPC,Competition,Intent,Results,Trend,Relevance\nbest seo tools,1200,3.45,0.7,informational,12000000,upward,high\nseo services,800,4.20,0.8,commercial,8500000,stable,high",
+        "status": "success",
+        "total_keywords": 25
+    },
+    "messages": [
+        "Keyword research completed successfully."
+    ],
+    "pagination": {
+        "maxRows": 0,
+        "totalPages": 1,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 25
+    },
+    "error": false
+}
+```
+
+### Keyword Budget Estimation
+**Endpoint:** `POST /api/v1/keywords/budget/estimate`
+
+**Purpose:** Generate comprehensive budget estimates for organic keywords based on SEMrush data analysis with trend analysis and recommendations.
+
+**Required Fields:**
+- `url` (string): Client business domain URL to analyze
+
+**Optional Fields:**
+- `categories` (array): Business categories for filtering
+- `seeds` (array): Seed keywords for analysis
+- `market` (string): Country/locale code (default: "us")
+- `language` (string): Language code (default: "en")
+- `max_keywords` (integer): Maximum keywords to return (default: 50)
+
+**Request Example:**
+```json
+{
+    "url": "https://example.com",
+    "categories": ["digital marketing", "seo services"],
+    "seeds": ["best seo", "digital marketing agency"],
+    "market": "us",
+    "language": "en",
+    "max_keywords": 25
+}
+```
+
+**Response:**
+```json
+{
+    "data": {
+        "url": "https://example.com",
+        "market": "us",
+        "language": "en",
+        "total_keywords": 25,
+        "cached": false,
+        "keywords": [
+            {
+                "keyword": "best seo tools",
+                "cpc": 3.45,
+                "monthly_searches": 1200,
+                "position": "5",
+                "position_credit": 15.75,
+                "cost": 84.25,
+                "value": 3,
+                "trend": "upward",
+                "competition": 0.7,
+                "budget_tier": "medium",
+                "volume_category": "medium"
+            }
+        ],
+        "summary": {
+            "total_monthly_cost": 2106.25,
+            "average_cost_per_keyword": 84.25,
+            "high_value_keywords": 8,
+            "budget_friendly_keywords": 12,
+            "premium_keywords": 5
+        }
+    },
+    "messages": [
+        "Budget estimation completed successfully"
+    ],
+    "pagination": {
+        "totalPages": 1,
+        "maxRows": 0,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 25
+    },
+    "error": false
+}
+```
+
+### Keyword Management
+**Endpoint:** `GET /api/v1/keywords/accounts/{account_id}/campaigns/{campaign_id}`
+
+**Purpose:** Retrieve keywords associated with a specific account and campaign.
+
+**URL Parameters:**
+- `account_id` (required): Account identifier
+- `campaign_id` (required): Campaign identifier
+
+**Example Request:**
+```http
+GET /api/v1/keywords/accounts/424685/campaigns/476273
+```
+
+**Response:**
+```json
+{
+    "data": [
+        {
+            "keyword_id": 12345,
+            "keyword": "best seo tools",
+            "current_position": 5,
+            "target_position": 3,
+            "monthly_searches": 1200,
+            "cpc": 3.45,
+            "competition": 0.7,
+            "status": "active",
+            "added_date": "2024-01-15T10:30:00Z"
+        }
+    ],
+    "messages": [
+        "Keywords retrieved successfully"
+    ],
+    "pagination": {
+        "maxRows": 0,
+        "totalPages": 1,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 1
+    },
+    "error": false
+}
+```
+
+### Creating Keywords
+**Endpoint:** `POST /api/v1/keywords`
+
+**Purpose:** Add new keywords to a campaign for tracking and optimization.
+
+**Required Fields:**
+- `account_id` (integer): Account identifier
+- `campaign_id` (integer): Campaign identifier
+- `keywords` (array): Array of keyword objects
+
+**Request Example:**
+```json
+{
+    "account_id": 424685,
+    "campaign_id": 476273,
+    "keywords": [
+        {
+            "keyword": "best seo tools",
+            "target_position": 3,
+            "priority": "high"
+        },
+        {
+            "keyword": "seo services",
+            "target_position": 5,
+            "priority": "medium"
+        }
+    ]
+}
+```
+
+### Updating Keywords
+**Endpoint:** `PUT /api/v1/keywords/{rank_id}`
+
+**Purpose:** Update existing keyword information.
+
+**URL Parameters:**
+- `rank_id` (required): Keyword rank identifier
+
+**Request Body:**
+```json
+{
+    "target_position": 2,
+    "priority": "high",
+    "notes": "Updated target position based on competitor analysis"
+}
+```
+
+### Deleting Keywords
+**Endpoint:** `DELETE /api/v1/keywords/{rank_id}`
+
+**Purpose:** Remove keywords from campaign tracking.
+
+**URL Parameters:**
+- `rank_id` (required): Keyword rank identifier
+
+### Keyword Research Features
+- **SEMrush Integration:** Direct access to SEMrush keyword data
+- **Budget Analysis:** Comprehensive cost estimation with trend analysis
+- **Caching:** 24-hour cache for cost optimization
+- **Trend Analysis:** Upward, stable, and declining trend identification
+- **Value Scoring:** 1-5 scale based on cost and potential value
+- **Budget Tiers:** Automatic categorization into budget levels
+- **Volume Analysis:** Search volume categorization
+- **Competition Analysis:** Competition level assessment
+
+### Budget Estimation Features
+- **Dynamic Calculations:** User-specific budget configurations
+- **Trend Multipliers:** Budget adjustments based on keyword trends
+- **Value Scoring:** Automatic value assessment (1-5 scale)
+- **Budget Tiers:** High, medium-high, medium, low-medium, low
+- **Volume Categories:** High, medium, decent, low volume
+- **Position Credits:** Cost adjustments based on current rankings
+- **Summary Analytics:** Total costs and keyword distribution
+
+---
+
+## 8. Reports and Data Retrieval
+
+### Workflow Reports
+**Endpoint:** `GET /api/v1/reports/workflows/accounts/{account_id}/campaigns/{campaign_id}`
+
+**Query Parameters:**
+- `account_id` (required): Account identifier
+- `campaign_id` (required): Campaign identifier
+- `date_from` (optional): Start date (YYYY-MM-DD format)
+- `date_to` (optional): End date (YYYY-MM-DD format)
+
+**Example Request:**
+```http
+GET /api/v1/reports/workflows/accounts/424685/campaigns/476273?date_from=2024-01-01&date_to=2024-01-31
+```
+
+**Response Data Includes:**
+- Task completion dates
+- Due dates
+- Task names and IDs
+- Status information
+- Workflow progress
+
+### Backlink Reports
+**Endpoint:** `GET /api/v1/reports/backlinks/accounts/{account_id}/campaigns/{campaign_id}`
+
+**Available Backlink Report Types:**
+- Referring backlinks
+- Provisioned backlinks
+- Lost backlinks
+
+### Keyword Reports
+**Endpoint:** `GET /api/v1/reports/keywords/accounts/{account_id}/campaigns/{campaign_id}`
+
+**Data Population Timeline:**
+- Reports become available as campaigns progress
+- Data is typically populated within 24-48 hours of campaign activation
+- Historical data may take longer for comprehensive reporting
+
+---
+
+## 9. Password Locker (IAM Credentials)
+
+### Secure Credential Management
+**Endpoint:** `POST /api/v2/accounts/iam/credentials`
+
+**Purpose:** Securely store and manage CMS credentials, login information, and other sensitive data for internal use.
+
+**Required Fields:**
+- `account_id` (integer): Account identifier
+- `campaign_id` (integer): Campaign identifier
+- `username` (string): Username for the credential
+- `encrypted_password` (string): Encrypted password
+- `note` (string): Description or notes about the credential
+- `credentials_types_id` (string): Type identifier for the credential
+
+**Request Example:**
+```json
+{
+    "account_id": 424685,
+    "campaign_id": 476273,
+    "username": "cms_admin",
+    "encrypted_password": "encrypted_password_string",
+    "note": "WordPress CMS admin credentials",
+    "credentials_types_id": "cms_wordpress"
+}
+```
+
+**Security Features:**
+- Passwords are encrypted before storage
+- Access is restricted to authorized reseller accounts
+- Credentials are tied to specific campaigns for organization
+- Audit trail maintained for credential access
+
+**Use Cases:**
+- CMS login credentials
+- Social media account access
+- Third-party service credentials
+- Internal system access tokens
+
+---
+
+## 10. Error Handling
+
+### Common HTTP Status Codes
+
+**200 OK:** Successful request
+**400 Bad Request:** Validation errors or malformed requests
+**401 Unauthorized:** Invalid or expired authentication token
+**403 Forbidden:** Insufficient permissions or account ownership issues
+**404 Not Found:** Resource not found
+**405 Method Not Allowed:** Invalid HTTP method
+**422 Unprocessable Content:** Business logic validation failures
+
+### Error Response Format
+```json
+{
+    "data": {},
+    "messages": [
+        "Error description here"
+    ],
+    "pagination": {
+        "maxRows": 0,
+        "totalPages": 1,
+        "offset": 0,
+        "page": 1,
+        "totalRecords": 0
+    },
+    "error": true
+}
+```
+
+### Best Practices
+- Always check the `error` field in responses
+- Implement proper retry logic for transient failures
+- Log error messages for debugging
+- Handle token expiration gracefully
+
+---
+
+## 11. Integration Best Practices
+
+### Rate Limiting
+- Implement appropriate delays between requests
+- Monitor response headers for rate limit information
+- Use exponential backoff for retry logic
+
+### Data Validation
+- Validate all required fields before API calls
+- Implement client-side validation matching server constraints
+- Handle validation errors gracefully
+
+### Security
+- Store API credentials securely
+- Use HTTPS for all API communications
+- Implement proper token refresh mechanisms
+- Never log sensitive data
+
+### Monitoring
+- Track API response times
+- Monitor error rates
+- Set up alerts for authentication failures
+- Log successful operations for audit trails
+
+---
+
+## 12. Complete Integration Example
+
+### Step-by-Step Workflow
+
+1. **Authenticate:**
+   ```bash
+   curl -X POST https://developers.semify.com/api/v1/authentication/login \
+     -H "Content-Type: application/json" \
+     -d '{"username":"your_username","password":"your_password"}'
+   ```
+
+2. **Create Account:**
+   ```bash
+   curl -X POST https://developers.semify.com/api/v2/accounts \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"account_name":"Test Business","phone":"555-123-4567",...}'
+   ```
+
+3. **Attach Service Plan:**
+   ```bash
+   curl -X POST https://developers.semify.com/api/v1/products/plans/campaigns \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"account_id":424685,"campaign_id":476273,"service_plan_id":23010}'
+   ```
+
+4. **Add Campaign Notes:**
+   ```bash
+   curl -X POST https://developers.semify.com/api/v2/campaigns/notes \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"campaign_id":476273,"writer_instructions":"...","additional_instructions":"..."}'
+   ```
+
+5. **Store Credentials:**
+   ```bash
+   curl -X POST https://developers.semify.com/api/v2/accounts/iam/credentials \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"account_id":424685,"campaign_id":476273,"username":"admin",...}'
+   ```
+
+6. **Retrieve Account Information:**
+   ```bash
+   # Get all accounts
+   curl -X GET https://developers.semify.com/api/v2/accounts \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   
+   # Get specific account
+   curl -X GET https://developers.semify.com/api/v2/accounts/424685 \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   
+   # Get account by custom field
+   curl -X GET "https://developers.semify.com/api/v2/accounts/field/Industry/Technology" \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   ```
+
+7. **Retrieve Campaign Information:**
+   ```bash
+   # Get all campaigns for reseller
+   curl -X GET https://developers.semify.com/api/v1/campaigns \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   
+   # Get campaigns for specific account
+   curl -X GET https://developers.semify.com/api/v1/accounts/campaign/424685 \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   
+   # Get specific campaign details
+   curl -X GET https://developers.semify.com/api/v1/campaigns/476273/accounts/424685 \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   ```
+
+8. **Keyword Research and Management:**
+   ```bash
+   # SEMrush keyword research
+   curl -X POST https://developers.semify.com/api/v1/semrush/keywords/research \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"url":"https://example.com","categories":["technology"],"max_keywords":25}'
+   
+   # Keyword budget estimation
+   curl -X POST https://developers.semify.com/api/v1/keywords/budget/estimate \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"url":"https://example.com","seeds":["best seo"],"max_keywords":50}'
+   
+   # Get campaign keywords
+   curl -X GET https://developers.semify.com/api/v1/keywords/accounts/424685/campaigns/476273 \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   
+   # Add keywords to campaign
+   curl -X POST https://developers.semify.com/api/v1/keywords \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"account_id":424685,"campaign_id":476273,"keywords":[{"keyword":"best seo tools","target_position":3}]}'
+   ```
+
+9. **Retrieve Reports:**
+   ```bash
+   curl -X GET "https://developers.semify.com/api/v1/reports/workflows/accounts/424685/campaigns/476273" \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   ```
+
+---
+
+## 13. Support and Resources
+
+### Documentation
+- **API Reference:** https://developers.semify.com/
+- **OpenAPI Specification:** Available for download
+- **SDK Generation:** Use OpenAPI spec to generate client libraries
+
+### Support
+- Contact the Semify team for integration support
+- Report issues through appropriate channels
+- Request additional endpoints or features as needed
+
+### Updates
+- Monitor API documentation for changes
+- Subscribe to update notifications
+- Test integrations in staging environments before production deployment
+
+---
+
+This comprehensive guide provides everything needed to successfully integrate with the Semify APIs. The platform's robust architecture supports complex workflows while maintaining security and reliability throughout the integration process.
