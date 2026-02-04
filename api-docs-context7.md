@@ -7,6 +7,21 @@
 **Docs:** [Swagger](http://swagger.io)  
 **External Docs:** [ReadMe Blog](https://blog.readme.io/an-example-filled-guide-to-swagger-3-2/)
 
+## Source of truth
+
+- Developer portal: https://developers.semify.com/
+- OpenAPI (YAML): https://developers.semify.com/_spec/openapi.yaml?download
+- OpenAPI (JSON): https://developers.semify.com/_spec/openapi.json?download
+- Portal index Markdown: https://developers.semify.com/index.html.md
+
+## AI-readable docs
+
+This file is the Context7-friendly index. For full endpoint schemas and models, use `openapi3_0.yaml` and `openapi.json`. For per-operation docs, use `portal-markdown/`. For onboarding and best-practice guidance, use `onboarding-workflow` and `wiki/Home.md`.
+
+## Examples
+
+Per-endpoint request/response examples live in `portal-markdown/` (one Markdown file per operation). This avoids duplication and keeps examples aligned with the portal.
+
 ---
 
 ## Security
@@ -18,6 +33,7 @@
 
 ## Servers
 
+- **Mock server:** `https://developers.semify.com/_mock/openapi/`
 - **Sandbox:** `https://uat.services.semify.com`
 - **Production:** `https://services.semify.com`
 
@@ -159,4 +175,12 @@
 
 ---
 
-**For more details, refer to the full OpenAPI YAML or the [Swagger documentation](http://swagger.io).** 
+---
+
+## Onboarding workflow
+
+For a complete integration sequence (auth → accounts → products → campaigns → reports → IAM), see `onboarding-workflow`.
+
+---
+
+**For more details, refer to `openapi3_0.yaml`, `openapi.json`, or the developer portal.**
