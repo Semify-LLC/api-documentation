@@ -1,5 +1,7 @@
 # Semify API Integration Guide — Onboarding Workflow
 
+This guide mirrors the onboarding wiki: https://github.com/Semify-LLC/api-documentation/wiki
+
 A concise, client-ready guide for integrating with the Semify Enterprise REST APIs. This document covers authentication, account and campaign management, service plan attachment, keyword budget estimation & management, reporting, secure credential storage, error handling, and integration best practices.
 
 Base URL: `https://developers.semify.com/`
